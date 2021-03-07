@@ -67,11 +67,11 @@ def get_emp_all():
     return data
 
 
-@app.route('/api/v1/emp/<string:id>', methods=['POST'])
+@app.route('/api/v1/emp/<string:id>', methods=['POST', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def update_emp(id):    
     """Update existing employee or Add new one if not exists
-    curl -d "id=001&name=Rahul&last_name=patil&location=mumbai" -X POST http://127.0.0.1:5000/api/v1/emp/001
+    curl -d "id=001&firstName=Rahul&lastName=patil&age=22&jobTitle=Engineer&dateJoined=2020-07-01&bio=DB&avatar=https://duck.com" -X POST http://127.0.0.1:5000/api/v1/emp/001
     curl -d "id=E001&name=Prashant&last_name=patil&location=mumbai" -X POST http://127.0.0.1:5000/api/v1/emp/E001
     """
     logging.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -86,25 +86,26 @@ def update_emp(id):
     logging.info(".......Ids : %s" % ids)
 
     if id in ids:
-        logging.info("Id exists at position %s" % ids[id])
+        logging.info("Id exists at position %s, updating" % ids[id])
         data["employees"].pop(ids[id])
         data["employees"].insert(ids[id], emp_data)
+    else:
+        logging.info(".......Id Does not exists, Adding it")        
+        data["employees"].append(emp_data)
 
     update_json_data({"data": data}, json_name="emp")
     return data
 
 
-@app.route('/api/v1/emp/<string:id>', methods=['DELETE'])
+@app.route('/api/v1/emp/<string:id>', methods=['DELETE', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def delete_emp(id):    
-    logging.info("deleting employee %s" % id)
-    data = read_json_data(json_name="emp")
-    print("==========================")
-    print(data)
-    print("==========================")
-    
-    removed_emp = data.pop(id)
-    logging.info("deleting employee %s" % removed_emp)
+    logging.info("......deleting employee %s" % id)
+    logging.info("......deleting employee %s" % id)
+    data = read_json_data(json_name="emp")    
+    ids = dict([(emp["id"], emp_pos) for emp_pos, emp in enumerate(data["employees"])])
+    removed_emp = data["employees"].pop(ids[id])
+    logging.info("......deleting employee %s" % removed_emp)
     update_json_data({"data": data}, json_name="emp")
     return data
 
@@ -134,11 +135,6 @@ def update_todo(id):
     logging.info("updating employee %s" % id)
     data = read_json_data(json_name="todo")
     
-    print("==========================")
-    print("==========================")
-    print(json.loads(request.data))
-    print("==========================")
-    
     todo_data = json.loads(request.data)
 
     data[id] = todo_data
@@ -161,7 +157,7 @@ def delete_todo(id):
 
 def update_json_data(data, json_name):
     with open("asset/%s.json" % json_name, "w") as json_file:
-        logging.info("Data to be updated in json %s: %s" % (json_name, data))
+        logging.info("Data to be updated in json %s" % (json_name))
         json.dump(data, json_file)
         logging.info("Successfully changes Json")
 

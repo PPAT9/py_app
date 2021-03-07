@@ -2,6 +2,7 @@
 Flask API
 
 # python venv venv
+# venv\Scripts\activate
 # pip install flask
 # pip install flask_dotenv
 # to resolve cros
