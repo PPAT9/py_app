@@ -110,22 +110,28 @@ def delete_emp(id):
     return data
 
 
-@app.route('/api/v1/emp/<string:id>/todo', methods=['GET'])
+@app.route('/api/v1/emp/<string:id>/todo', methods=['GET', 'OPTIONS'])
+@cross_origin(supports_credentials=True)
 def get_todo(id=None):
-    query_parameters = request.args
+    
     data = read_json_data(json_name="todo")
     logging.info("Getting toto data for ID : %s" % id)
 
-    if query_parameters.get('id'):
-        id = query_parameters.get('id')
-        logging.info("Getting emp data for query ID : %s" % id)
-    
     data = data.get(id)
 
     logging.info("data = %s" % data)
+    return {"todo": data}
+
+@app.route('/api/v1/todo', methods=['GET', 'OPTIONS'])
+@cross_origin(supports_credentials=True)
+def get_todo_all():
+    
+    data = read_json_data(json_name="todo")    
+    logging.info("data = %s" % data)
     return data
 
-@app.route('/api/v1/emp/<string:id>/todo', methods=['POST'])
+
+@app.route('/api/v1/emp/<string:id>/todo', methods=['POST', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def update_todo(id):    
     """Update existing employee or Add new one if not exists
@@ -143,13 +149,16 @@ def update_todo(id):
     return data
 
 
-@app.route('/api/v1/emp/<string:id>/todo', methods=['DELETE'])
+@app.route('/api/v1/emp/<string:id>/todo/<string:todoid>', methods=['DELETE', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
-def delete_todo(id):    
-    logging.info("deleting employee %s" % id)
-    data = read_json_data(json_name="todo")
-    removed_emp = data.pop(id)
-    logging.info("deleting employee %s" % removed_emp)
+def delete_todo(id, todoid):    
+    """Delete Todo
+    """
+    logging.info("........deleting to do for empid %s - todoid %s" % (id, todoid))
+    data = read_json_data(json_name="todo")    
+    ids = dict([(todo["todoid"], todo_pos) for todo_pos, todo in enumerate(data[id])])    
+    removed_todoid = data[id].pop(ids[todoid])
+    logging.info(".....deleted todo %s" % removed_todoid)
     update_json_data({"data": data}, json_name="todo")
     return data
 
